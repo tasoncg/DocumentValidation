@@ -1,0 +1,228 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* === Editor / variable / print shared styles === */
+
+.editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  border: 1px solid hsl(var(--border));
+  border-bottom: 0;
+  border-radius: 0.5rem 0.5rem 0 0;
+  background: hsl(var(--muted));
+}
+
+.editor-shell {
+  border: 1px solid hsl(var(--border));
+  border-radius: 0 0 0.5rem 0.5rem;
+  background: white;
+  padding: 1.25rem 2.5rem;
+  min-height: 60vh;
+}
+
+.ProseMirror {
+  outline: none;
+  font-family: "Times New Roman", Times, serif;
+  font-size: 13pt;
+  line-height: 1.55;
+  counter-reset: para;
+}
+.ProseMirror > p,
+.ProseMirror > h1,
+.ProseMirror > h2,
+.ProseMirror > h3,
+.ProseMirror > ul,
+.ProseMirror > ol,
+.ProseMirror > table,
+.ProseMirror > blockquote {
+  position: relative;
+  counter-increment: para;
+}
+.ProseMirror > p::before,
+.ProseMirror > h1::before,
+.ProseMirror > h2::before,
+.ProseMirror > h3::before,
+.ProseMirror > ul::before,
+.ProseMirror > ol::before,
+.ProseMirror > table::before,
+.ProseMirror > blockquote::before {
+  content: counter(para);
+  position: absolute;
+  left: -2.25rem;
+  top: 0;
+  color: #9ca3af;
+  font-size: 0.7rem;
+  font-family: ui-sans-serif, system-ui;
+  user-select: none;
+}
+.ProseMirror table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.5em 0;
+}
+.ProseMirror td,
+.ProseMirror th {
+  border: 1px solid #000;
+  padding: 4px 6px;
+  vertical-align: top;
+}
+.ProseMirror p {
+  margin: 0 0 0.6em;
+}
+.ProseMirror ul,
+.ProseMirror ol {
+  padding-left: 1.5rem;
+  margin: 0 0 0.6em;
+}
+
+/* Variable spans */
+.var-span {
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+.ProseMirror .var-highlight {
+  background: #fff3a3;
+  border-radius: 2px;
+}
+.ProseMirror .var-highlight-active {
+  background: #ffd54f;
+  outline: 2px solid #f59e0b;
+}
+
+/* Empty-var (screen only) */
+.preview-backdrop[data-empty-vars] .var-empty {
+  background: #fee2e2;
+  outline: 1px dashed #ef4444;
+  outline-offset: 1px;
+}
+
+/* === Preview backdrop === */
+
+.preview-backdrop {
+  background: #e5e7eb;
+  min-height: 100vh;
+  padding: 2rem 0;
+}
+.preview-page-wrapper {
+  display: flex;
+  justify-content: center;
+}
+.preview-page-wrapper .printable.a4 {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* === A4 page === */
+:root {
+  --page-width: 210mm;
+  --page-height: 297mm;
+  --page-margin: 20mm;
+}
+.printable.a4 {
+  width: var(--page-width);
+  min-height: var(--page-height);
+  padding: var(--page-margin);
+  background: white;
+  box-sizing: border-box;
+  font-family: "Times New Roman", Times, serif;
+  font-size: 13pt;
+  line-height: 1.5;
+  color: #000;
+}
+.printable p {
+  margin: 0 0 0.5em;
+}
+.printable table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.printable td,
+.printable th {
+  border: 1px solid #000;
+  padding: 4px 6px;
+}
+
+/* === Print rules === */
+@media print {
+  @page {
+    size: A4;
+    margin: 20mm;
+  }
+  html,
+  body {
+    background: white !important;
+  }
+  nav,
+  header.app-header,
+  aside,
+  .editor-toolbar,
+  .top-panel,
+  .preview-toolbar,
+  .screen-only {
+    display: none !important;
+  }
+  .preview-backdrop {
+    background: white !important;
+    padding: 0 !important;
+  }
+  .printable.a4 {
+    box-shadow: none !important;
+    padding: 0 !important;
+    width: auto !important;
+    min-height: 0 !important;
+  }
+  .ProseMirror > *::before {
+    content: none !important;
+  }
+  .ProseMirror .var-highlight,
+  .ProseMirror .var-highlight-active,
+  .var-empty {
+    background: transparent !important;
+    outline: none !important;
+  }
+  table,
+  tr {
+    break-inside: avoid;
+  }
+  p {
+    orphans: 2;
+    widows: 2;
+  }
+}

@@ -11,15 +11,15 @@ Web app SaaS giúp cán bộ tạo, cấu hình và in biên bản vi phạm t�
 
 ```bash
 cp .env.example .env
-# Sinh secret cho NextAuth (Linux/Mac):
-#   openssl rand -base64 32
-# Trên Windows PowerShell:
-#   [Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
-# Paste vào NEXTAUTH_SECRET trong .env
+# Điền DATABASE_URL + DIRECT_URL trỏ tới Supabase (xem mô tả trong .env.example).
+# Sinh NEXTAUTH_SECRET:
+#   Linux/Mac: openssl rand -base64 32
+#   Windows:   [Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
 
 npm install
-npx prisma migrate dev
-npx prisma db seed
+npx prisma generate
+npm run db:push     # đồng bộ schema lên Postgres (lần đầu)
+npx prisma db seed  # seed user demo (chạy 1 lần)
 npm run dev
 ```
 
@@ -28,36 +28,25 @@ Mở http://localhost:3000 và đăng nhập:
 - Email: `officer@example.com`
 - Password: `Password123!`
 
+> ⚠️ **Local trỏ thẳng tới Postgres prod** — mọi thao tác ghi (kể cả `prisma db push`) đều ảnh hưởng dữ liệu thật. Cẩn thận khi chạy script.
+
 ## Cấu hình DB
 
-Mặc định dùng **SQLite** (`file:./dev.db`). Để chuyển sang **Postgres / Supabase**:
+Hai connection string cùng host Supabase, khác mode:
 
-1. Sửa `prisma/schema.prisma`:
-   ```prisma
-   datasource db {
-     provider = "postgresql"
-     url      = env("DATABASE_URL")
-   }
-   ```
-2. Sửa `DATABASE_URL` thành Postgres URL. Khi deploy Vercel + Supabase, dùng connection pooling:
-   ```
-   postgresql://USER:PASS@HOST:6543/postgres?pgbouncer=true&connection_limit=1
-   ```
-3. `npx prisma migrate dev --name init_postgres`.
+| Var | Port | Mode | Dùng cho |
+|---|---|---|---|
+| `DATABASE_URL` | 6543 | Transaction (PgBouncer) | Runtime queries — phải có `?pgbouncer=true&connection_limit=1` |
+| `DIRECT_URL` | 5432 | Session pooler | `prisma db push`, migrations, seed |
+
+Lý do tách: PgBouncer transaction-mode không hỗ trợ session-level lock mà Prisma cần khi sửa schema.
 
 ## Deploy lên Vercel
 
-1. Push repo lên GitHub.
-2. Import project trên Vercel; framework: Next.js.
-3. Set env vars trên Vercel:
-   - `DATABASE_URL` — Postgres URL (Supabase / Neon / Railway).
-   - `NEXTAUTH_SECRET` — sinh giống local.
-   - `NEXTAUTH_URL` — URL deploy (https://your-app.vercel.app).
-4. Build command đã có `prisma migrate deploy`, migration chạy tự động khi deploy.
-5. Lần đầu cần seed user demo: chạy local trỏ tới Postgres prod hoặc dùng Vercel CLI:
-   ```
-   DATABASE_URL="<prod url>" npx prisma db seed
-   ```
+1. Push repo lên GitHub — Vercel auto-deploy `main`.
+2. Env vars Vercel (đã set):
+   - `DATABASE_URL`, `DIRECT_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`.
+3. Build command (`npm run build`) tự chạy `prisma db push` để đồng bộ schema khi schema thay đổi.
 
 ## In văn bản đúng cách
 
@@ -93,11 +82,10 @@ features/            Feature spec.md and plan.md per feature
 | Lệnh | Mô tả |
 |---|---|
 | `npm run dev` | Next.js dev server (localhost:3000) |
-| `npm run build` | Prisma generate + migrate deploy + Next build |
+| `npm run build` | Prisma generate + db push + Next build |
 | `npm run start` | Chạy production build |
-| `npm run db:migrate` | `prisma migrate dev` |
+| `npm run db:push` | Đồng bộ schema → Postgres (`prisma db push`) |
 | `npm run db:seed` | Seed user demo |
-| `npm run db:reset` | Reset & re-migrate DB (xoá hết data!) |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run test` | Vitest |
 

@@ -1,17 +1,13 @@
-// Prisma schema — Document Violation Manager
-// To switch to Postgres for production, change `provider` to "postgresql"
-// and update DATABASE_URL accordingly.
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
-// Role values: "officer" | "admin" (SQLite has no enum support)
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -27,8 +23,6 @@ model User {
 
 model DocumentTemplate {
   id               String    @id @default(cuid())
-  // orderNumber is computed on insert (max+1 in a transaction) — Prisma SQLite
-  // doesn't allow autoincrement() on non-id fields. See server/templates.ts.
   orderNumber      Int       @unique
   name             String
   originalFileName String

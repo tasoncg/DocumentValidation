@@ -4,8 +4,6 @@ out/
 build/
 .env
 .env.local
-*.db
-*.db-journal
 .vercel
 .DS_Store
 .turbo
